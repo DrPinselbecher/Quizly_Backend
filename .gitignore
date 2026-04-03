@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+
+# Virtual Environments
+env/
+venv/
+.venv/
+
+# Django
+db.sqlite3
+/media
+/static
+staticfiles/
+media/
+*.log
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.swp
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Environment / Secrets
+.env
+*.secret
+*.key
+
+# Batch Files
+*.bat
+
+# Docker
+.dockerignore
+
+# shell scripts
+*.sh
