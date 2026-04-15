@@ -42,3 +42,6 @@ Thumbs.db
 
 # shell scripts
 *.sh
+
+# all lern data files with '_LERN' ending
+*_LERN.*

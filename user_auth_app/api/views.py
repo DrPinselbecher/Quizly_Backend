@@ -1,8 +1,10 @@
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+from django.conf import settings
 from rest_framework import status
-
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -15,25 +17,32 @@ class RegistrationView(APIView):
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"detail": "User created successfully!"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {'detail': 'User created successfully!'},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class LogoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
 
         if refresh_token:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except (InvalidToken, TokenError):
+                pass
 
         response = Response(
             {
-                "detail": "Log-Out successfully! All Tokens will be deleted. Refresh token is now invalid."
+                'detail': 'Log-Out successfully! All Tokens will be deleted. Refresh token is now invalid.'
             },
             status=status.HTTP_200_OK
         )
@@ -45,36 +54,53 @@ class LogoutView(APIView):
 
 class CookieTokenObtainPairView(TokenObtainPairView):
     permission_classes = [AllowAny]
+    serializer_class = TokenObtainPairSerializer
+
+    def _set_auth_cookies(self, response, access_token, refresh_token):
+        response.set_cookie(
+            key='access_token',
+            value=access_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            path='/',
+        )
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            path='/',
+        )
+        return response
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if response.status_code == status.HTTP_200_OK:
-            access_token = response.data.get('access')
-            refresh_token = response.data.get('refresh')
+        access_token = serializer.validated_data['access']
+        refresh_token = serializer.validated_data['refresh']
+        user = serializer.user
 
-            response.set_cookie(
-                key='access_token',
-                value=access_token,
-                httponly=True,
-                secure=True,
-                samesite='Lax'
-            )
-            response.set_cookie(
-                key='refresh_token',
-                value=refresh_token,
-                httponly=True,
-                secure=True,
-                samesite='Lax'
-            )
+        response = Response(
+            {
+                'detail': 'Login successfully!',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                }
+            },
+            status=status.HTTP_200_OK
+        )
 
-            response.data = {
-                "message": "Login successful. Tokens are set in HttpOnly cookies."
-            }
-        return response
-    
+        return self._set_auth_cookies(response, access_token, refresh_token)
+
 
 class CookieTokenRefreshView(TokenRefreshView):
+    permission_classes = [AllowAny]
+
     def _clear_auth_cookies(self, response):
         response.delete_cookie('access_token', path='/', samesite='Lax')
         response.delete_cookie('refresh_token', path='/', samesite='Lax')
@@ -85,41 +111,40 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         if not refresh_token:
             response = Response(
-                {"detail": "Refresh token missing."},
+                {'detail': 'Refresh token missing.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
             return self._clear_auth_cookies(response)
 
-        serializer = self.get_serializer(data={"refresh": refresh_token})
+        serializer = self.get_serializer(data={'refresh': refresh_token})
 
         try:
             serializer.is_valid(raise_exception=True)
         except (InvalidToken, TokenError):
             response = Response(
-                {"detail": "Invalid refresh token."},
+                {'detail': 'Invalid refresh token.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
             return self._clear_auth_cookies(response)
         except Exception:
             response = Response(
-                {"detail": "Internal server error."},
+                {'detail': 'Internal server error.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
             return self._clear_auth_cookies(response)
 
-        access_token = serializer.validated_data["access"]
+        access_token = serializer.validated_data['access']
 
         response = Response(
-            {"detail": "Token refreshed"},
+            {'detail': 'Token refreshed'},
             status=status.HTTP_200_OK
         )
         response.set_cookie(
             key='access_token',
             value=access_token,
             httponly=True,
-            secure=True,
+            secure=not settings.DEBUG,
             samesite='Lax',
-            path='/'
+            path='/',
         )
         return response
-    
