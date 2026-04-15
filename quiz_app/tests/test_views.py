@@ -16,13 +16,12 @@ class QuizViewTests(APITestCase):
     """Test quiz list, detail, update, and delete endpoints."""
 
     def setUp(self):
-        """Create users, quizzes, questions, and endpoint URLs."""
         self.user = self.create_user('rene', 'rene@example.com')
         self.other_user = self.create_user('other', 'other@example.com')
         self.quiz = self.create_quiz(self.user, 'Python Quiz')
         self.other_quiz = self.create_quiz(self.other_user, 'Other Quiz')
-        self.create_question(self.quiz, 'What is Python?', 'Language')
-        self.create_question(self.other_quiz, 'Other question?', 'A')
+        self.create_question(self.quiz, 'What is Python?')
+        self.create_question(self.other_quiz, 'Other question?')
         self.list_create_url = reverse('quiz-list-create')
         self.detail_url = reverse('quiz-detail', kwargs={'pk': self.quiz.id})
         self.other_detail_url = reverse(
@@ -47,13 +46,13 @@ class QuizViewTests(APITestCase):
             video_url='https://www.youtube.com/watch?v=abc123XYZ',
         )
 
-    def create_question(self, quiz, title, answer):
+    def create_question(self, quiz, title):
         """Create and return a question for the given quiz."""
         return Question.objects.create(
             quiz=quiz,
             question_title=title,
             question_options=['Language', 'Animal', 'Game', 'Tool'],
-            answer=answer,
+            answer='Language',
         )
 
     def authenticate(self):
