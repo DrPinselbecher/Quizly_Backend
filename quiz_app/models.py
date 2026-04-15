@@ -1,40 +1,8 @@
-from urllib.parse import parse_qs, urlparse
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
-
-def extract_youtube_video_id(url):
-    parsed_url = urlparse(url)
-    host = parsed_url.netloc.lower()
-
-    if host in ['youtu.be', 'www.youtu.be']:
-        video_id = parsed_url.path.strip('/')
-        if video_id:
-            return video_id
-
-    if host in ['youtube.com', 'www.youtube.com', 'm.youtube.com']:
-        if parsed_url.path == '/watch':
-            video_id = parse_qs(parsed_url.query).get('v', [None])[0]
-            if video_id:
-                return video_id
-
-        if parsed_url.path.startswith('/shorts/'):
-            parts = parsed_url.path.strip('/').split('/')
-            if len(parts) >= 2 and parts[1]:
-                return parts[1]
-
-        if parsed_url.path.startswith('/embed/'):
-            parts = parsed_url.path.strip('/').split('/')
-            if len(parts) >= 2 and parts[1]:
-                return parts[1]
-
-    raise ValidationError({'url': 'Invalid YouTube URL.'})
-
-
-def build_canonical_youtube_url(video_id):
-    return f'https://www.youtube.com/watch?v={video_id}'
+from quiz_app.utils import build_canonical_youtube_url, extract_youtube_video_id
 
 
 class Quiz(models.Model):
