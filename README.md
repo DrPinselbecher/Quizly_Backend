@@ -42,6 +42,7 @@ Frontend Repository: 👉 **https://github.com/DrPinselbecher/Quizly_Frontend**
 | google-genai | 1.72.0 |
 | openai-whisper | 20250625 |
 | yt-dlp | 2026.3.17 |
+| yt-dlp-ejs | 0.8.0 |
 | Database | SQLite (default) |
 | Development Environment | VS Code recommended |
 
@@ -466,6 +467,7 @@ Main packages used in this project:
 - google-genai 1.72.0
 - openai-whisper 20250625
 - yt-dlp 2026.3.17
+- yt-dlp-ejs 0.8.0
 
 > The exact full dependency list is maintained in `requirements.txt`.
 
