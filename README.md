@@ -129,22 +129,22 @@ pip install -r requirements.txt
 
 ### ✅ 4. Create your local `.env` file
 
-Create a file named `.env` in the same directory as `manage.py`.
+A `.env.template` file is included in this repository.
+
+Copy `.env.template` and rename the copy to `.env` in the same directory as `manage.py`.
 
 Example:
 
-~~~env
-SECRET_KEY=your_secret_key_here
-DEBUG=True
-ALLOWED_HOSTS=127.0.0.1,localhost
-
-GEMINI_API_KEY=your_gemini_api_key_here
-
-CORS_ALLOWED_ORIGINS=http://127.0.0.1:5500,http://localhost:5500,http://localhost:4200
-
-WHISPER_MODEL=base
-GEMINI_MODEL=gemini-2.5-flash
+~~~bash
+cp .env.template .env
 ~~~
+
+On Windows, create a copy of `.env.template` and rename it to `.env`.
+
+Then fill in your own values, especially:
+
+- `SECRET_KEY`
+- `GEMINI_API_KEY`
 
 Generate a secure secret key:
 
@@ -162,11 +162,13 @@ Create your Gemini API key here:
 
 `https://ai.google.dev/`
 
-Then add it to your `.env` file:
+Then open your local `.env` file and add your real API key:
 
 ~~~env
 GEMINI_API_KEY=your_gemini_api_key_here
 ~~~
+
+> The real API key is not included in this repository.
 
 ---
 
