@@ -131,7 +131,7 @@ The quiz must follow this exact structure:
 
 {{
     "title": "Create a concise quiz title based on the topic of the transcript.",
-    "description": "Summarize the transcript in no more than 150 characters. Do not include any quiz questions or answers.",
+    "description": "Summarize the transcript in maximum 150 characters. The description must never exceed 150 characters and must not include any quiz questions or answers.",
     "questions": [
     {{
         "question_title": "The question goes here.",
@@ -147,6 +147,7 @@ Requirements:
 - Only one correct answer is allowed per question, and it must be present in "question_options".
 - The output must be valid JSON and parsable as-is.
 - Do not include explanations, comments, markdown, or any text outside the JSON.
+- The "description" field must never be longer than 150 characters.
 
 Transcript:
 {transcript}

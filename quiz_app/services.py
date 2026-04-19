@@ -31,11 +31,13 @@ class QuizGenerationError(Exception):
     """Raised when quiz generation fails at any service step."""
 
 
-def clean_required_text(value, field_name, max_length=None):
-    """Trim text and ensure that it is not empty."""
+def clean_required_text(value, field_name, max_length=None, truncate=False):
+    """Trim text, ensure that it is not empty, and optionally truncate it."""
     cleaned_value = value.strip()
     if not cleaned_value:
         raise ValueError(f'{field_name} must not be empty.')
+    if max_length and truncate:
+        return cleaned_value[:max_length]
     if max_length and len(cleaned_value) > max_length:
         raise ValueError(f'{field_name} must not exceed {max_length} characters.')
     return cleaned_value
@@ -115,7 +117,7 @@ class GeneratedQuizSchema(BaseModel):
     @classmethod
     def validate_description(cls, value):
         """Validate the generated quiz description."""
-        return clean_required_text(value, 'Description', 150)
+        return clean_required_text(value, 'Description', 150, truncate=True)
 
     @field_validator('questions')
     @classmethod
